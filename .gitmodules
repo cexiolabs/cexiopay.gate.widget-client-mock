@@ -1,0 +1,3 @@
+[submodule "submodules/schamas"]
+	path = submodules/schamas
+	url = https://github.com/cexiolabs/cexiopay.schemas.git
