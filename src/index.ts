@@ -120,14 +120,16 @@ export class WidgetServiceClientMock implements WidgetServiceClient {
 
     private _intervalId: number | null = null;
 
-    private readonly _mockStateArray: Function[] = [
+    private readonly _mockStateArray: any[] = [
         this.mockStateAskForEmail.bind(this),
         this.mockStateChooseInputCurrency.bind(this)
     ];
 
-    public state: WidgetServiceClient.State | null;
-
     private isOnStateChangedBusy: boolean = false;
+
+    private interval: number;
+
+    public state: WidgetServiceClient.State | null;
 
     private _onStateChanged: WidgetServiceClient.StateChangedCallback | null;
 
@@ -140,31 +142,12 @@ export class WidgetServiceClientMock implements WidgetServiceClient {
 
     public set onStateChanged(value: WidgetServiceClient.StateChangedCallback) { this._onStateChanged = value; }
 
-    public constructor() {
+    public constructor(interval: number = 5000) {
         this.state = null;
         this._onStateChanged = null;
-   
+        this.interval = interval;
 
         this.startInterval();
-    }
-
-    private startInterval(): void {
-        this._intervalId = setInterval(async () => {
-            const currenctState: WidgetServiceClient.State = this._mockStateArray[this._currentStateIndex]();
-            this._currentStateIndex += 1;
-            if (this._currentStateIndex >= this._mockStateArray.length) {
-                this._currentStateIndex = 0;
-            }
-
-            if (this._onStateChanged === null || this.state === null || this.isOnStateChangedBusy === true) {
-                return;
-            }
-
-            this.isOnStateChangedBusy = true;
-            await this._onStateChanged(this.state);
-            this.isOnStateChangedBusy = false;
-            this.state = null;
-        }, 3000);
     }
 
     public invoke(action: WidgetServiceClient.StateAction): Promise<void> {
@@ -177,7 +160,35 @@ export class WidgetServiceClientMock implements WidgetServiceClient {
         }
     }
 
+    private startInterval(): void {
+        this._intervalId = setInterval(async () => {
+            this._mockStateArray[this._currentStateIndex]();
+
+            this._currentStateIndex += 1;
+            if (this._currentStateIndex >= this._mockStateArray.length) {
+                this._currentStateIndex = 0;
+            }
+
+            if (this._onStateChanged === null || this.state === null || this.isOnStateChangedBusy === true) {
+                return;
+            }
+
+            this.callStateChanged(this.state);
+            this.state = null;
+        }, this.interval);
+    }
+
+    private async callStateChanged(state: WidgetServiceClient.State) {
+        if (this._onStateChanged === null) {
+            throw new Error("Somthing is wrong, onStateChanged is null");
+        }
+        this.isOnStateChangedBusy = true;
+        await this._onStateChanged(state);
+        this.isOnStateChangedBusy = false;
+    }
+
     private async mockStateAskForEmail(): Promise<void> {
+        console.log("Run mockStateAskForEmail");
         this.state = {
             step: "ASK_FOR_EMAIL",
             email: null
@@ -185,6 +196,7 @@ export class WidgetServiceClientMock implements WidgetServiceClient {
     }
 
     private async mockStateChooseInputCurrency(): Promise<void> {
+        console.log("Run mockStateChooseInputCurrency");
         this.state = {
             step: "CHOOSE_INPUT_CURRECY",
             rates: Object.freeze(
