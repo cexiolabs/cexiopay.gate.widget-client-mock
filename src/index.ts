@@ -116,9 +116,13 @@ export class WidgetServiceClientMock implements WidgetServiceClient {
 		"DASH"
 	];
 
+	private _currenctCurrency: String | null = null;
+
+	private _currenctEmail: String | null = null;
+
 	private _currentStateIndex: number = 0;
 
-	private _intervalId: number | null = null;
+	private _timeoutId: number | null = null;
 
 	private readonly _mockStateArray: Array<any> = [
 		this.mockStateAskForEmail.bind(this),
@@ -138,24 +142,31 @@ export class WidgetServiceClientMock implements WidgetServiceClient {
 
 	public set onStateChanged(value: WidgetServiceClient.StateChangedCallback) { this._onStateChanged = value; }
 
-	public constructor(interval: number = 5000) {
+	public constructor(timeoutDelay: number = 5000) {
 		this.state = null;
 		this._onStateChanged = null;
-		this.startInterval(interval);
+		this.startTimeout(timeoutDelay);
 	}
 
-	public invoke(action: WidgetServiceClient.StateAction): Promise<void> {
-		throw new Error("Method not implemented.");
-	}
-
-	public async dispose(): Promise<void> {
-		if (this._intervalId !== null) {
-			clearInterval(this._intervalId);
+	public async invoke(action: WidgetServiceClient.StateAction): Promise<void> {
+		switch (action.step) {
+			case "SELECT_INPUT_CURRECY":
+				this._currenctCurrency = action.fromCurrency;
+				break;
+			case "SET_EMAIL":
+				this._currenctEmail = action.email;
+				break;
 		}
 	}
 
-	private startInterval(interval: number): void {
-		this._intervalId = setInterval(async () => {
+	public async dispose(): Promise<void> {
+		if (this._timeoutId !== null) {
+			clearTimeout(this._timeoutId);
+		}
+	}
+
+	private startTimeout(timeoutDelay: number): void {
+		this._timeoutId = setTimeout(async () => {
 			this._mockStateArray[this._currentStateIndex]();
 
 			this._currentStateIndex += 1;
@@ -170,10 +181,11 @@ export class WidgetServiceClientMock implements WidgetServiceClient {
 			try {
 				await this._onStateChanged(this.state);
 			} catch (e) {
-
+				throw Error("Error in onStageChanged function");
+			} finally {
+				this.startTimeout(timeoutDelay);
 			}
-			this.state = null;
-		}, interval);
+		}, timeoutDelay);
 	}
 
 	private async mockStateAskForEmail(): Promise<void> {
@@ -207,7 +219,32 @@ export class WidgetServiceClientMock implements WidgetServiceClient {
 	}
 
 	private randomFromRange(min: number, max: number): WidgetServiceClient.Financial {
-		return Math.floor(Math.random() * (max - min + 1) + min).toString();
+		return Math.floor(Math.random() * (max - min) + min).toString();
+	}
+}
+
+export class WidgetServiceClientImpl implements WidgetServiceClient {
+	public state: WidgetServiceClient.State | null;
+	private _onStateChanged: WidgetServiceClient.StateChangedCallback | null;
+
+	public get onStateChanged(): WidgetServiceClient.StateChangedCallback {
+		if (this._onStateChanged === null) {
+			throw new Error("Wrong operation at current state. Callback deletage onStateChanged is not set yet.");
+		}
+		return this._onStateChanged;
+	}
+	public set onStateChanged(value: WidgetServiceClient.StateChangedCallback) { this._onStateChanged = value; }
+
+	public constructor() {
+		this.state = null;
+		this._onStateChanged = null;
 	}
 
+	public invoke(action: WidgetServiceClient.StateAction): Promise<void> {
+		throw new Error("Method not implemented.");
+	}
+
+	public dispose(): Promise<void> {
+		throw new Error("Method not implemented.");
+	}
 }
