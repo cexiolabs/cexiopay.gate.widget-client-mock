@@ -299,7 +299,7 @@ export class WidgetServiceClientMock implements WidgetServiceClient {
 			email: "",
 			callbackMethodName: "SetEmail",
 			progress: {
-				currentPageNumber: 0
+				currentPageNumber: 2
 			}
 		}
 	}
@@ -325,7 +325,7 @@ export class WidgetServiceClientMock implements WidgetServiceClient {
 			toCurrency: this._currencyCryptoArray[Math.floor(Math.random() * this._currencyFiatArray.length)],
 			callbackMethodName: "SetCurrencyFrom",
 			progress: {
-				currentPageNumber: 0
+				currentPageNumber: 1
 			}
 		}
 	}
