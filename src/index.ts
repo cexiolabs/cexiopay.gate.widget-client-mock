@@ -16,7 +16,7 @@ export interface WidgetServiceClient {
 	/**
 	 * Invoke state action (RPC call to server)
 	 */
-	invoke(action: WidgetServiceClient.StateAction): Promise<void>;
+	invoke(action: WidgetServiceClient.StateActionCallback): Promise<void>;
 
 
 	//
@@ -126,14 +126,23 @@ export namespace WidgetServiceClient {
 		readonly depositAcceptConfirmations: number
 	}
 
+	/**
+	 * Represents a progress object that can be used for creation of progress bar in the widget.
+	 * Total number of pages should be defined as a constant in the widget, but backend can change the order of pages.
+	 */
+	export interface Progress {
+		readonly currentPageNumber: number
+	}
+
     /**
      * @see ./submodules/schemas/gateway/v3/gate.page-change.SAMPLE-1.json
      */
     export interface StateChooseInputCurrency {
-        readonly step: "CHOOSE_INPUT_CURRECY";
-        readonly rates: ReadonlyArray<CurrencyRate>;
-        readonly toAmount: Financial;
-        readonly toCurrency: Currency;
+        readonly step: "CHOOSE_INPUT_CURRECY",
+        readonly rates: ReadonlyArray<CurrencyRate>,
+        readonly toAmount: Financial,
+        readonly toCurrency: Currency,
+		readonly progress: Progress
     }
 
     /**
@@ -141,18 +150,35 @@ export namespace WidgetServiceClient {
      */
     export interface StateAskForEmail {
         readonly step: "ASK_FOR_EMAIL",
-        readonly email: string | null;
+        readonly email: string | null,
+		readonly progress: Progress
     }
+
+	/**
+	 * @see ./submodules/schemas/gateway/v3/gate.page-change.SAMPLE-{N}.json
+	 * where {N} is 3 to 10
+	 */
+	export interface StateProcessPayment {
+		readonly step: "PROCESS_PAYMENT",
+		readonly order: Order,
+		readonly progress: Progress
+	}
+
+	/**
+	 * @see ./submodules/schemas/gateway/v3/gate.page-change.SAMPLE-11.json
+	 */
+	export interface StateErrorOccurred {
+		readonly step: "ERROR_OCCURRED",
+		readonly errorTitle: string,
+		readonly errorShortDescription: string,
+		readonly errorLongDescription: string
+	}
 
     export type State =
         StateChooseInputCurrency
         | StateAskForEmail
-        // | StateTBD
-        // | StateTBD
-        // | StateTBD
-        // | StateTBD
-        // | StateTBD
-        ;
+		| StateProcessPayment
+		| StateErrorOccurred;
 
     export interface ActionSelectInputCurrency {
         readonly step: "SELECT_INPUT_CURRECY";
@@ -164,14 +190,9 @@ export namespace WidgetServiceClient {
         readonly email: string;
     }
 
-    export type StateAction =
+    export type StateActionCallback =
         ActionSelectInputCurrency
-        | ActionSetEmail
-        // | ActionTBD
-        // | ActionTBD
-        // | ActionTBD
-        // | ActionTBD
-        ;
+        | ActionSetEmail;
 
     export type StateChangedCallback = (state: State) => Promise<void>;
 }
@@ -226,7 +247,7 @@ export class WidgetServiceClientMock implements WidgetServiceClient {
 		this.startTimeout(timeoutDelay);
 	}
 
-	public async invoke(action: WidgetServiceClient.StateAction): Promise<void> {
+	public async invoke(action: WidgetServiceClient.StateActionCallback): Promise<void> {
 		switch (action.step) {
 			case "SELECT_INPUT_CURRECY":
 				this._currenctCurrency = action.fromCurrency;
@@ -318,7 +339,7 @@ export class WidgetServiceClientImpl implements WidgetServiceClient {
 		this._onStateChanged = null;
 	}
 
-	public invoke(action: WidgetServiceClient.StateAction): Promise<void> {
+	public invoke(action: WidgetServiceClient.StateActionCallback): Promise<void> {
 		throw new Error("Method not implemented.");
 	}
 
