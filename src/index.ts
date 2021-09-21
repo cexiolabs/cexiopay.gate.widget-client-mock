@@ -16,7 +16,7 @@ export interface WidgetServiceClient {
 	/**
 	 * Invoke state action (RPC call to server)
 	 */
-	invoke(action: WidgetServiceClient.StateActionCallback): Promise<void>;
+	invoke(action: WidgetServiceClient.StateAction): Promise<void>;
 
 
 	//
@@ -142,7 +142,8 @@ export namespace WidgetServiceClient {
         readonly rates: ReadonlyArray<CurrencyRate>,
         readonly toAmount: Financial,
         readonly toCurrency: Currency,
-		readonly progress: Progress
+		readonly progress: Progress,
+		readonly callbackMethodName: string
     }
 
     /**
@@ -151,7 +152,8 @@ export namespace WidgetServiceClient {
     export interface StateAskForEmail {
         readonly step: "ASK_FOR_EMAIL",
         readonly email: string | null,
-		readonly progress: Progress
+		readonly progress: Progress,
+		readonly callbackMethodName: string
     }
 
 	/**
@@ -182,15 +184,17 @@ export namespace WidgetServiceClient {
 
     export interface ActionSelectInputCurrency {
         readonly step: "SELECT_INPUT_CURRENCY",
+		readonly callbackMethodName: string,
         readonly fromCurrency: Currency
     }
 
     export interface ActionSetEmail {
         readonly step: "SET_EMAIL",
+		readonly callbackMethodName: string,
         readonly email: string
     }
 
-    export type StateActionCallback =
+    export type StateAction =
         ActionSelectInputCurrency
         | ActionSetEmail;
 
@@ -247,7 +251,7 @@ export class WidgetServiceClientMock implements WidgetServiceClient {
 		this.startTimeout(timeoutDelay);
 	}
 
-	public async invoke(action: WidgetServiceClient.StateActionCallback): Promise<void> {
+	public async invoke(action: WidgetServiceClient.StateAction): Promise<void> {
 		switch (action.step) {
 			case "SELECT_INPUT_CURRENCY":
 				this._currenctCurrency = action.fromCurrency;
@@ -292,6 +296,7 @@ export class WidgetServiceClientMock implements WidgetServiceClient {
 		this.state = {
 			step: "ASK_FOR_EMAIL",
 			email: "",
+			callbackMethodName: "SetEmail",
 			progress: {
 				currentPageNumber: 0
 			}
@@ -317,6 +322,7 @@ export class WidgetServiceClientMock implements WidgetServiceClient {
 			),
 			toAmount: `0.${this.randomFromRange(1000, 1000000)}`,
 			toCurrency: this._currencyCryptoArray[Math.floor(Math.random() * this._currencyFiatArray.length)],
+			callbackMethodName: "SetCurrencyFrom",
 			progress: {
 				currentPageNumber: 0
 			}
@@ -379,7 +385,7 @@ export class WidgetServiceClientImpl implements WidgetServiceClient {
 		start();
 	}
 
-	public async invoke(action: WidgetServiceClient.StateActionCallback): Promise<void> {
+	public async invoke(action: WidgetServiceClient.StateAction): Promise<void> {
 		if (action.step === "SELECT_INPUT_CURRENCY") {
 			await this.setCurrencyFrom(action);
 		} else if (action.step === "SET_EMAIL") {
@@ -389,7 +395,7 @@ export class WidgetServiceClientImpl implements WidgetServiceClient {
 
 	private async setCurrencyFrom(action: WidgetServiceClient.ActionSelectInputCurrency): Promise<void> {
 		try {
-			await this._connection.invoke(action.step,
+			await this._connection.invoke(action.callbackMethodName,
 				this._gatewayId, this._orderId, action.fromCurrency);
 		} catch (err) {
 			console.error(err);
@@ -398,7 +404,7 @@ export class WidgetServiceClientImpl implements WidgetServiceClient {
 
 	private async setEmail(action: WidgetServiceClient.ActionSetEmail): Promise<void> {
 		try {
-			await this._connection.invoke(action.step,
+			await this._connection.invoke(action.callbackMethodName,
 				this._gatewayId, this._orderId, action.email);
 		} catch (err) {
 			console.error(err);
