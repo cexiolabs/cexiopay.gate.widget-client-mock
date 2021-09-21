@@ -269,7 +269,7 @@ export class WidgetServiceClientMock implements WidgetServiceClient {
 	}
 
 	private startTimeout(timeoutDelay: number): void {
-		this._timeoutId = setTimeout(async () => {
+		const handler: TimerHandler = async () => {
 			this._mockStateArray[this._currentStateIndex]();
 
 			this._currentStateIndex += 1;
@@ -288,7 +288,8 @@ export class WidgetServiceClientMock implements WidgetServiceClient {
 			} finally {
 				this.startTimeout(timeoutDelay);
 			}
-		}, timeoutDelay);
+		};
+		this._timeoutId = setTimeout(handler, timeoutDelay);
 	}
 
 	private async mockStateAskForEmail(): Promise<void> {
