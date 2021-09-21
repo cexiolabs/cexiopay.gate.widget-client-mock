@@ -30,26 +30,100 @@ export interface WidgetServiceClient {
 }
 
 export namespace WidgetServiceClient {
+
     /**
-     * Represent currency code, like: "USD", "BTC", etc
+     * Represents a currency code, like: "USD", "BTC", etc
+	 * @see https://github.com/cexiolabs/cexiopay.schemas/blob/master/api/v3/currency.json
      */
     export type Currency = string;
 
     /**
-     * Represent financial value, like "10.42"
+     * Represents a financial value, like "10.42"
+	 * @see https://github.com/cexiolabs/cexiopay.schemas/blob/master/api/v3/primitives.json
      */
     export type Financial = string;
 
+	/**
+	 * Represents an order identifier
+	 * @see https://github.com/cexiolabs/cexiopay.schemas/blob/master/gateway/v2/identifier-order.json
+	 */
+	export type OrderIdentifier = string;
+
+	/**
+	 * Represents a rejection reason enum for order object
+	 * @see https://github.com/cexiolabs/cexiopay.schemas/blob/master/gateway/v2/order-rejection-reason.json
+	 */
+	export type RejectionReason = "CANCELED" | "UNPAID" | "EXCHANGE_FAILED";
+
+	/**
+	 * Represents an order state
+	 * @see https://github.com/cexiolabs/cexiopay.schemas/blob/master/gateway/v2/order-state.json
+	 */
+	export type OrderState = "AWAIT_DEPOSIT" | "EXCHANGE" | "EXCHANGED" | "COMPLETED" | "REJECTED" | "REQUESTED";
+
+	export interface CurrencyRateMaintenance {
+		readonly scheduledUptimeAt: Date,
+		readonly code: number
+	}
+
+	/**
+	 * Represents a rate before order is created (for response of /getRates)
+	 */
     export interface CurrencyRate {
         readonly from: Currency,
         readonly to: Currency,
         readonly symbol: string,
         readonly base: Financial,
-        readonly maintenance: null
+        readonly maintenance: CurrencyRateMaintenance | null
     }
 
+	/**
+	 * Represents an order rate
+	 * @see https://github.com/cexiolabs/cexiopay.schemas/blob/master/gateway/v2/order-rate.json
+	 */
+	export interface OrderRate {
+		readonly symbol: string,
+		readonly rate: Financial
+	}
+
+	/**
+	 * Represents an order currency
+	 * @see https://github.com/cexiolabs/cexiopay.schemas/blob/master/gateway/v2/order-currency.json
+	 */
+	export interface OrderCurrency {
+		readonly currency: Currency,
+		readonly amount: Financial
+	}
+
+	export interface OrderDeposit {
+		readonly address: string,
+		readonly uri: string,
+		readonly amount: Financial,
+		readonly underpayment: Financial
+	}
+
+	/**
+	 * Represents an order object
+	 * @see https://github.com/cexiolabs/cexiopay.schemas/blob/master/gateway/v2/order.json
+	 */
+	export interface Order {
+		readonly id: OrderIdentifier,
+		readonly confirmedAt: Date | null,
+		readonly okRedirect: string | null,
+		readonly failRedirect: string | null,
+		readonly expiredAt: Date | null,
+		readonly rate: OrderRate | null,
+		readonly state: OrderState,
+		readonly rejectionReason: RejectionReason | null,
+		readonly paidStatus: string | null,
+		readonly from: OrderCurrency | null,
+		readonly to: OrderCurrency,
+		readonly deposit: OrderDeposit | null,
+		readonly depositAcceptConfirmations: number
+	}
+
     /**
-     * @see ./submodules/schamas/gateway/v3/gate.page-change.SAMPLE-1.json
+     * @see ./submodules/schemas/gateway/v3/gate.page-change.SAMPLE-1.json
      */
     export interface StateChooseInputCurrency {
         readonly step: "CHOOSE_INPUT_CURRECY";
@@ -59,7 +133,7 @@ export namespace WidgetServiceClient {
     }
 
     /**
-     * @see ./submodules/schamas/gateway/v3/gate.page-change.SAMPLE-2.json
+     * @see ./submodules/schemas/gateway/v3/gate.page-change.SAMPLE-2.json
      */
     export interface StateAskForEmail {
         readonly step: "ASK_FOR_EMAIL",
