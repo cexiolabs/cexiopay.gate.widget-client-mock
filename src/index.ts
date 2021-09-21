@@ -291,7 +291,10 @@ export class WidgetServiceClientMock implements WidgetServiceClient {
 		console.log("Run mockStateAskForEmail");
 		this.state = {
 			step: "ASK_FOR_EMAIL",
-			email: null
+			email: "",
+			progress: {
+				currentPageNumber: 0
+			}
 		}
 	}
 
@@ -314,6 +317,9 @@ export class WidgetServiceClientMock implements WidgetServiceClient {
 			),
 			toAmount: `0.${this.randomFromRange(1000, 1000000)}`,
 			toCurrency: this._currencyCryptoArray[Math.floor(Math.random() * this._currencyFiatArray.length)],
+			progress: {
+				currentPageNumber: 0
+			}
 		}
 	}
 
