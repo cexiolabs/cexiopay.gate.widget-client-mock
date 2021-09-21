@@ -12,7 +12,7 @@ TODO mock implementation
 Для развертывания на сервере используется реализация клиента, которая уже
 непосредственно общается через SignalR с бэкендом.
 Использование библиотеки выглядит следующим образом:
-```TypeScript
+```typescript
 const gatewayId: string = "...";
 const orderId: string = "...";
 const onStateChanged = async (state: WidgetServiceClient.State, client: WidgetServiceClient): Promise<void> => {
