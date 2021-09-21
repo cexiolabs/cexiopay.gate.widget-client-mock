@@ -62,7 +62,7 @@ export namespace WidgetServiceClient {
 	export type OrderState = "AWAIT_DEPOSIT" | "EXCHANGE" | "EXCHANGED" | "COMPLETED" | "REJECTED" | "REQUESTED";
 
 	export interface CurrencyRateMaintenance {
-		readonly scheduledUptimeAt: Date,
+		readonly scheduledUptimeAt: Date | null,
 		readonly code: number
 	}
 
