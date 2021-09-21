@@ -20,5 +20,8 @@
 	},
 	"files": [
 		"lib/**/*"
-	]
+	],
+	"dependencies": {
+		"@microsoft/signalr": "^5.0.10"
+	}
 }

@@ -138,7 +138,7 @@ export namespace WidgetServiceClient {
      * @see ./submodules/schemas/gateway/v3/gate.page-change.SAMPLE-1.json
      */
     export interface StateChooseInputCurrency {
-        readonly step: "CHOOSE_INPUT_CURRECY",
+        readonly step: "CHOOSE_INPUT_CURRENCY",
         readonly rates: ReadonlyArray<CurrencyRate>,
         readonly toAmount: Financial,
         readonly toCurrency: Currency,
@@ -181,13 +181,13 @@ export namespace WidgetServiceClient {
 		| StateErrorOccurred;
 
     export interface ActionSelectInputCurrency {
-        readonly step: "SELECT_INPUT_CURRECY";
-        readonly fromCurrency: Currency;
+        readonly step: "SELECT_INPUT_CURRENCY",
+        readonly fromCurrency: Currency
     }
 
     export interface ActionSetEmail {
-        readonly step: "SET_EMAIL";
-        readonly email: string;
+        readonly step: "SET_EMAIL",
+        readonly email: string
     }
 
     export type StateActionCallback =
@@ -249,7 +249,7 @@ export class WidgetServiceClientMock implements WidgetServiceClient {
 
 	public async invoke(action: WidgetServiceClient.StateActionCallback): Promise<void> {
 		switch (action.step) {
-			case "SELECT_INPUT_CURRECY":
+			case "SELECT_INPUT_CURRENCY":
 				this._currenctCurrency = action.fromCurrency;
 				break;
 			case "SET_EMAIL":
@@ -301,7 +301,7 @@ export class WidgetServiceClientMock implements WidgetServiceClient {
 	private async mockStateChooseInputCurrency(): Promise<void> {
 		console.log("Run mockStateChooseInputCurrency");
 		this.state = {
-			step: "CHOOSE_INPUT_CURRECY",
+			step: "CHOOSE_INPUT_CURRENCY",
 			rates: Object.freeze(
 				this._currencyCryptoArray.reduce(((acc, crypto) => {
 					const rates = this._currencyFiatArray.map((fiat) => ({
@@ -328,9 +328,13 @@ export class WidgetServiceClientMock implements WidgetServiceClient {
 	}
 }
 
+import { HubConnection, HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
 export class WidgetServiceClientImpl implements WidgetServiceClient {
 	public state: WidgetServiceClient.State | null;
-	private _onStateChanged: WidgetServiceClient.StateChangedCallback | null;
+	private _onStateChanged: WidgetServiceClient.StateChangedCallback;
+	private _connection: HubConnection;
+	private _gatewayId: string;
+	private _orderId: string;
 
 	public get onStateChanged(): WidgetServiceClient.StateChangedCallback {
 		if (this._onStateChanged === null) {
@@ -338,18 +342,71 @@ export class WidgetServiceClientImpl implements WidgetServiceClient {
 		}
 		return this._onStateChanged;
 	}
-	public set onStateChanged(value: WidgetServiceClient.StateChangedCallback) { this._onStateChanged = value; }
 
-	public constructor() {
+	public constructor(gatewayId: string, orderId: string,
+			onStateChanged: WidgetServiceClient.StateChangedCallback) {
 		this.state = null;
-		this._onStateChanged = null;
+		this._gatewayId = gatewayId;
+		this._orderId = orderId;
+		this._onStateChanged = onStateChanged;
+
+		const connection = new HubConnectionBuilder()
+			.withUrl("/v3/gate")
+			.configureLogging(LogLevel.Information)
+			.build();
+		connection.on("PageChange", (state: WidgetServiceClient.State) => {
+			this.state = state;
+			onStateChanged(state);
+		});
+
+		async function start() {
+			try {
+				await connection.start();
+				await connection.invoke("SUBSCRIBE_TO_ORDER",
+					gatewayId, orderId);
+				console.log("SignalR connected...");
+			} catch (err) {
+				console.log(err);
+				setTimeout(start, 5000);
+			}
+		};
+		
+		connection.onclose(async () => {
+			await start();
+		});
+		
+		this._connection = connection;
+		start();
 	}
 
-	public invoke(action: WidgetServiceClient.StateActionCallback): Promise<void> {
-		throw new Error("Method not implemented.");
+	public async invoke(action: WidgetServiceClient.StateActionCallback): Promise<void> {
+		if (action.step === "SELECT_INPUT_CURRENCY") {
+			await this.setCurrencyFrom(action);
+		} else if (action.step === "SET_EMAIL") {
+			await this.setEmail(action);
+		}
 	}
 
-	public dispose(): Promise<void> {
-		throw new Error("Method not implemented.");
+	private async setCurrencyFrom(action: WidgetServiceClient.ActionSelectInputCurrency): Promise<void> {
+		try {
+			await this._connection.invoke(action.step,
+				this._gatewayId, this._orderId, action.fromCurrency);
+		} catch (err) {
+			console.error(err);
+		}
+	}
+
+	private async setEmail(action: WidgetServiceClient.ActionSetEmail): Promise<void> {
+		try {
+			await this._connection.invoke(action.step,
+				this._gatewayId, this._orderId, action.email);
+		} catch (err) {
+			console.error(err);
+		}
+	}
+
+	public async dispose(): Promise<void> {
+		await this._connection.stop();
+		console.log("SignalR disconnected...");
 	}
 }
