@@ -95,6 +95,10 @@ export namespace WidgetServiceClient {
 		readonly amount: Financial
 	}
 
+	/**
+	 * Represents an order deposit
+	 * @see https://github.com/cexiolabs/cexiopay.schemas/blob/master/gateway/v2/order-deposit.json
+	 */
 	export interface OrderDeposit {
 		readonly address: string,
 		readonly uri: string,
