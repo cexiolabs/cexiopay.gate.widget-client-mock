@@ -42,7 +42,8 @@ rl.on('line', async (input) => {
 		}
 		await client.invoke(obj);
 		jsonChunck = "";
-	} catch (e) {		
+	} catch (e) {
+		console.log(e);
 	}
 });
 

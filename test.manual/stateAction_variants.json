@@ -1,12 +1,12 @@
 [
 	{
 		"step": "SET_EMAIL",
-		"callbackMethodName": "",
+		"callbackMethodName": "SetEmail",
 		"email": "test@mail.com"
 	},
 	{
 		"step": "SELECT_INPUT_CURRENCY",
-		"callbackMethodName": "",
+		"callbackMethodName": "SetCurrencyFrom",
 		"fromCurrency": "BTC"
 	}
 ]
