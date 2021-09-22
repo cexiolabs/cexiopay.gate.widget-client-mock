@@ -257,9 +257,11 @@ export class WidgetServiceClientMock implements WidgetServiceClient {
 		switch (action.step) {
 			case "SELECT_INPUT_CURRENCY":
 				this._currenctCurrency = action.fromCurrency;
+				console.log(`Call invoke SELECT_INPUT_CURRENCY. Set fromCurrency ${this._currenctCurrency}`)
 				break;
 			case "SET_EMAIL":
 				this._currenctEmail = action.email;
+				console.log(`Call invoke SET_EMAIL. Set fromCurrency ${this._currenctEmail}`)
 				break;
 		}
 	}
