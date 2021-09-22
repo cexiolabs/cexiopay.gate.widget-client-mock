@@ -1,7 +1,7 @@
 {
-	"name": "@cexiolabs/cexiopay.gate.widget-client-mock",
-	"version": "0.0.1",
-	"description": "",
+	"name": "@cexiolab/cexiopay.gate.widget-client-mock",
+	"version": "0.0.2",
+	"description": "TBD",
 	"main": "lib/index.js",
 	"types": "lib/index.d.ts",
 	"scripts": {
@@ -10,11 +10,14 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "ssh://git@github.com:cexiolabs/cexiopay,gate.widget-client.git"
+		"url": "ssh://git@github.com:cexiolabs/cexiopay.gate.widget-client-mock.git"
 	},
 	"keywords": [],
 	"author": "",
 	"license": "ISC",
+	"dependencies": {
+		"@microsoft/signalr": "^5.0.10"
+	},
 	"devDependencies": {
 		"@types/node": "^16.9.5",
 		"ts-node": "^10.2.1",
@@ -22,8 +25,5 @@
 	},
 	"files": [
 		"lib/**/*"
-	],
-	"dependencies": {
-		"@microsoft/signalr": "^5.0.10"
-	}
+	]
 }
