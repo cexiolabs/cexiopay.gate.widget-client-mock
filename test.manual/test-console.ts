@@ -1,7 +1,8 @@
 #!/usr/bin/env node
-import { ConsoleLogger } from '@microsoft/signalr/dist/esm/Utils';
 import * as readline from 'readline';
 import { WidgetServiceClient, WidgetServiceClientImpl, WidgetServiceClientMock } from "../src/index";
+
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
 let client: WidgetServiceClient | null = null;
 
