@@ -196,6 +196,12 @@ export namespace WidgetServiceClient {
 		readonly email: string
 	}
 
+	export interface WidgetServiceClientOptions {
+		gatewayId: string,
+		orderId: string,
+		onStateChanged: WidgetServiceClient.StateChangedCallback
+	}
+
 	export type StateAction =
 		ActionSelectInputCurrency
 		| ActionSetEmail;
@@ -343,8 +349,8 @@ export class WidgetServiceClientImpl implements WidgetServiceClient {
 	public state: WidgetServiceClient.State | null;
 	private _onStateChanged: WidgetServiceClient.StateChangedCallback;
 	private _connection: HubConnection;
-	private _gatewayId: string;
-	private _orderId: string;
+	private readonly _gatewayId: string;
+	private readonly _orderId: string;
 
 	public get onStateChanged(): WidgetServiceClient.StateChangedCallback {
 		if (this._onStateChanged === null) {
@@ -353,11 +359,11 @@ export class WidgetServiceClientImpl implements WidgetServiceClient {
 		return this._onStateChanged;
 	}
 
-	public constructor(gatewayId: string, orderId: string, onStateChanged: WidgetServiceClient.StateChangedCallback) {
+	public constructor(opts: WidgetServiceClient.WidgetServiceClientOptions) {
 		this.state = null;
-		this._gatewayId = gatewayId;
-		this._orderId = orderId;
-		this._onStateChanged = onStateChanged;
+		this._gatewayId = opts.gatewayId;
+		this._orderId = opts.orderId;
+		this._onStateChanged = opts.onStateChanged;
 
 		const connection = new HubConnectionBuilder()
 			.withUrl("/v3/gate")
@@ -365,14 +371,14 @@ export class WidgetServiceClientImpl implements WidgetServiceClient {
 			.build();
 		connection.on("PageChange", (state: WidgetServiceClient.State) => {
 			this.state = state;
-			onStateChanged(state);
+			this._onStateChanged(state);
 		});
 
 		async function start() {
 			try {
 				await connection.start();
 				await connection.invoke("SUBSCRIBE_TO_ORDER",
-					gatewayId, orderId);
+					opts.gatewayId, opts.orderId);
 				console.log("SignalR connected...");
 			} catch (err) {
 				console.log(err);

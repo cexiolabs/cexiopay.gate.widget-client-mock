@@ -66,9 +66,15 @@ function startWidgetServiceClientMock() {
 }
 
 function startWidgetServiceClientImpl() {
-	client = new WidgetServiceClientImpl("", "", async (state: WidgetServiceClient.State) => {
+	const onStateChanged = async (state: WidgetServiceClient.State) => {
 		console.clear();
 		console.log(JSON.stringify(state, null, 2));
+	}
+
+	client = new WidgetServiceClientImpl({
+		gatewayId: "",
+		orderId: "",
+		onStateChanged
 	});
 }
 
