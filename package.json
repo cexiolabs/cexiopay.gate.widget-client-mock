@@ -1,6 +1,6 @@
 {
-	"name": "@cexiolab/cexiopay.gate.widget-client-mock",
-	"version": "0.0.2",
+	"name": "@cexiolabs/cexiopay.gate.widget-client-mock",
+	"version": "0.0.3",
 	"description": "TBD",
 	"main": "lib/index.js",
 	"types": "lib/index.d.ts",
