@@ -366,7 +366,7 @@ export class WidgetServiceClientImpl implements WidgetServiceClient {
 		this._onStateChanged = opts.onStateChanged;
 
 		const connection = new HubConnectionBuilder()
-			.withUrl("/v3/gate")
+			.withUrl("https://gate3-evolution-cexiopay.dev.kube/v3/gate")
 			.configureLogging(LogLevel.Information)
 			.build();
 		connection.on("PageChange", (state: WidgetServiceClient.State) => {
@@ -377,7 +377,7 @@ export class WidgetServiceClientImpl implements WidgetServiceClient {
 		async function start() {
 			try {
 				await connection.start();
-				await connection.invoke("SUBSCRIBE_TO_ORDER",
+				await connection.invoke("SubscribeToOrderChanges",
 					opts.gatewayId, opts.orderId);
 				console.log("SignalR connected...");
 			} catch (err) {

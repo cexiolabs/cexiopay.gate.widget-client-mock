@@ -63,8 +63,8 @@ function startWidgetServiceClientImpl() {
 	}
 
 	client = new WidgetServiceClientImpl({
-		gatewayId: "",
-		orderId: "",
+		gatewayId: "9a9da708-50ec-4d6a-a374-e5b0283b7b98",
+		orderId: "order-123456",
 		onStateChanged
 	});
 }
