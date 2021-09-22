@@ -1,3 +1,5 @@
+import { HubConnection, HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
+
 export interface WidgetServiceClient {
 	//
 	// API
@@ -31,17 +33,17 @@ export interface WidgetServiceClient {
 
 export namespace WidgetServiceClient {
 
-    /**
-     * Represents a currency code, like: "USD", "BTC", etc
+	/**
+	 * Represents a currency code, like: "USD", "BTC", etc
 	 * @see https://github.com/cexiolabs/cexiopay.schemas/blob/master/api/v3/currency.json
-     */
-    export type Currency = string;
+	 */
+	export type Currency = string;
 
-    /**
-     * Represents a financial value, like "10.42"
+	/**
+	 * Represents a financial value, like "10.42"
 	 * @see https://github.com/cexiolabs/cexiopay.schemas/blob/master/api/v3/primitives.json
-     */
-    export type Financial = string;
+	 */
+	export type Financial = string;
 
 	/**
 	 * Represents an order identifier
@@ -69,13 +71,13 @@ export namespace WidgetServiceClient {
 	/**
 	 * Represents a rate before order is created (for response of /getRates)
 	 */
-    export interface CurrencyRate {
-        readonly from: Currency,
-        readonly to: Currency,
-        readonly symbol: string,
-        readonly base: Financial,
-        readonly maintenance: CurrencyRateMaintenance | null
-    }
+	export interface CurrencyRate {
+		readonly from: Currency,
+		readonly to: Currency,
+		readonly symbol: string,
+		readonly base: Financial,
+		readonly maintenance: CurrencyRateMaintenance | null
+	}
 
 	/**
 	 * Represents an order rate
@@ -134,27 +136,27 @@ export namespace WidgetServiceClient {
 		readonly currentPageNumber: number
 	}
 
-    /**
-     * @see ./submodules/schemas/gateway/v3/gate.page-change.SAMPLE-1.json
-     */
-    export interface StateChooseInputCurrency {
-        readonly step: "CHOOSE_INPUT_CURRENCY",
-        readonly rates: ReadonlyArray<CurrencyRate>,
-        readonly toAmount: Financial,
-        readonly toCurrency: Currency,
+	/**
+	 * @see ./submodules/schemas/gateway/v3/gate.page-change.SAMPLE-1.json
+	 */
+	export interface StateChooseInputCurrency {
+		readonly step: "CHOOSE_INPUT_CURRENCY",
+		readonly rates: ReadonlyArray<CurrencyRate>,
+		readonly toAmount: Financial,
+		readonly toCurrency: Currency,
 		readonly progress: Progress,
 		readonly callbackMethodName: string
-    }
+	}
 
-    /**
-     * @see ./submodules/schemas/gateway/v3/gate.page-change.SAMPLE-2.json
-     */
-    export interface StateAskForEmail {
-        readonly step: "ASK_FOR_EMAIL",
-        readonly email: string | null,
+	/**
+	 * @see ./submodules/schemas/gateway/v3/gate.page-change.SAMPLE-2.json
+	 */
+	export interface StateAskForEmail {
+		readonly step: "ASK_FOR_EMAIL",
+		readonly email: string | null,
 		readonly progress: Progress,
 		readonly callbackMethodName: string
-    }
+	}
 
 	/**
 	 * @see ./submodules/schemas/gateway/v3/gate.page-change.SAMPLE-{N}.json
@@ -176,29 +178,29 @@ export namespace WidgetServiceClient {
 		readonly errorLongDescription: string
 	}
 
-    export type State =
-        StateChooseInputCurrency
-        | StateAskForEmail
+	export type State =
+		StateChooseInputCurrency
+		| StateAskForEmail
 		| StateProcessPayment
 		| StateErrorOccurred;
 
-    export interface ActionSelectInputCurrency {
-        readonly step: "SELECT_INPUT_CURRENCY",
+	export interface ActionSelectInputCurrency {
+		readonly step: "SELECT_INPUT_CURRENCY",
 		readonly callbackMethodName: string,
-        readonly fromCurrency: Currency
-    }
+		readonly fromCurrency: Currency
+	}
 
-    export interface ActionSetEmail {
-        readonly step: "SET_EMAIL",
+	export interface ActionSetEmail {
+		readonly step: "SET_EMAIL",
 		readonly callbackMethodName: string,
-        readonly email: string
-    }
+		readonly email: string
+	}
 
-    export type StateAction =
-        ActionSelectInputCurrency
-        | ActionSetEmail;
+	export type StateAction =
+		ActionSelectInputCurrency
+		| ActionSetEmail;
 
-    export type StateChangedCallback = (state: State) => Promise<void>;
+	export type StateChangedCallback = (state: State) => Promise<void>;
 }
 
 export class WidgetServiceClientMock implements WidgetServiceClient {
@@ -335,7 +337,6 @@ export class WidgetServiceClientMock implements WidgetServiceClient {
 	}
 }
 
-import { HubConnection, HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
 export class WidgetServiceClientImpl implements WidgetServiceClient {
 	public state: WidgetServiceClient.State | null;
 	private _onStateChanged: WidgetServiceClient.StateChangedCallback;
@@ -350,8 +351,7 @@ export class WidgetServiceClientImpl implements WidgetServiceClient {
 		return this._onStateChanged;
 	}
 
-	public constructor(gatewayId: string, orderId: string,
-			onStateChanged: WidgetServiceClient.StateChangedCallback) {
+	public constructor(gatewayId: string, orderId: string, onStateChanged: WidgetServiceClient.StateChangedCallback) {
 		this.state = null;
 		this._gatewayId = gatewayId;
 		this._orderId = orderId;
@@ -377,11 +377,11 @@ export class WidgetServiceClientImpl implements WidgetServiceClient {
 				setTimeout(start, 5000);
 			}
 		};
-		
+
 		connection.onclose(async () => {
 			await start();
 		});
-		
+
 		this._connection = connection;
 		start();
 	}
