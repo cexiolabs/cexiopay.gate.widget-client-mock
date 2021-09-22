@@ -3,6 +3,21 @@
 TODO description
 
 ## Usage
+
+### Test Console
+
+Для тестирование библиотеки разработана тест-консоль.
+
+Запуск
+
+```shell
+./node_modules/.bin/ts-node test.manual/test-console.ts
+Choose WidgetServiceClient implementation (1 - WidgetServiceClientMock, 2 - WidgetServiceClientImpl): 2
+Creating an instance... done.
+The application is ready to use. You will see all events in the console. Also you may raw JSON to call invoke.
+....
+```
+
 ### local
 
 TODO mock implementation
