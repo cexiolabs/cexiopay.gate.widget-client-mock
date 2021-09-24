@@ -4,8 +4,10 @@ include:
   - https://gitlab.wnb:28443/cexiolabs/pipelines/-/raw/master/publish-library-nodejs-vars.yml
   - https://gitlab.wnb:28443/cexiolabs/pipelines/-/raw/master/build-library-nodejs-14-release.yml
   - https://gitlab.wnb:28443/cexiolabs/pipelines/-/raw/master/build-library-nodejs-14-snapshot.yml
+  - https://gitlab.wnb:28443/cexiolabs/pipelines/-/raw/yarn-support/build-library-yarn-2-snapshot.yml
   - https://gitlab.wnb:28443/cexiolabs/pipelines/-/raw/master/publish-library-nodejs-14-release.yml
   - https://gitlab.wnb:28443/cexiolabs/pipelines/-/raw/master/publish-library-nodejs-14-snapshot.yml
+  - https://gitlab.wnb:28443/cexiolabs/pipelines/-/raw/yarn-support/publish-library-yarn-2-snapshot.yml
 
 stages:
   - build
