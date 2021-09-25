@@ -1,4 +1,5 @@
-import { HubConnection, HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
+import { HubConnection, HubConnectionBuilder, HubConnectionState, LogLevel } from "@microsoft/signalr";
+import { setTimeout } from "node:timers";
 
 export interface WidgetServiceClient {
 	//
@@ -24,6 +25,11 @@ export interface WidgetServiceClient {
 	//
 	// Life-cycle
 	//
+
+	/**
+	 * Start connection and listen to changes
+	 */
+	start(): Promise<void>;
 
 	/**
 	 * Dispose all related resources
@@ -227,7 +233,7 @@ export class WidgetServiceClientMock implements WidgetServiceClient {
 		"DASH"
 	];
 	private readonly _processOrder: WidgetServiceClient.Order = {
-		id: "7ae366f4-c193-46cf-a6c3-ba6f4ba0c93e",
+		id: "order-123456",
         confirmedAt: new Date("2021-09-15T13:20:36.916927+03:00"),
         expiredAt: new Date("2021-09-15T13:40:36.916929+03:00"),
         rate: {
@@ -257,7 +263,7 @@ export class WidgetServiceClientMock implements WidgetServiceClient {
 	}
 
 	private readonly _orderReceived1: WidgetServiceClient.Order = {
-		id: "7ae366f4-c193-46cf-a6c3-ba6f4ba0c93e",
+		id: "order-123456",
         confirmedAt: new Date("2021-09-15T13:20:36.916927+03:00"),
         expiredAt: new Date("2021-09-15T13:40:36.916929+03:00"),
         rate: {
@@ -287,7 +293,7 @@ export class WidgetServiceClientMock implements WidgetServiceClient {
 	}
 
 	private readonly _orderReceived2: WidgetServiceClient.Order = {
-		id: "7ae366f4-c193-46cf-a6c3-ba6f4ba0c93e",
+		id: "order-123456",
         confirmedAt: new Date("2021-09-15T13:20:36.916927+03:00"),
         expiredAt: new Date("2021-09-15T13:40:36.916929+03:00"),
         rate: {
@@ -346,22 +352,13 @@ export class WidgetServiceClientMock implements WidgetServiceClient {
         depositAcceptConfirmations: 5
 	}
 
-	private _currenctCurrency: String | null = null;
-
-	private _currenctEmail: String | null = null;
-
-	//private _currentStateIndex: number = 0;
-
-	//private _timeoutId: number | null = null;
-
-	private readonly _mockStateArray: Array<any> = [
-		this.mockStateAskForEmail.bind(this),
-		this.mockStateChooseInputCurrency.bind(this)
-	];
+	private _currencyName: String | null = null;
+	private _email: String | null = null;
 
 	public state: WidgetServiceClient.State | null;
 
 	private _onStateChanged: WidgetServiceClient.StateChangedCallback | null;
+	private readonly _responseDelayMultiplier: number;
 
 	public get onStateChanged(): WidgetServiceClient.StateChangedCallback {
 		if (this._onStateChanged === null) {
@@ -370,7 +367,9 @@ export class WidgetServiceClientMock implements WidgetServiceClient {
 		return this._onStateChanged;
 	}
 
-	public set onStateChanged(value: WidgetServiceClient.StateChangedCallback) { this._onStateChanged = value; }
+	public set onStateChanged(value: WidgetServiceClient.StateChangedCallback) {
+		this._onStateChanged = value;
+	}
 
 	public switchState(step: "CHOOSE_INPUT_CURRENCY" | "ASK_FOR_EMAIL"
 		| "PROCESS_PAYMENT" | "PAYMENT_RECEIVE" | "PAYMENT_COMPLETED")
@@ -412,54 +411,39 @@ export class WidgetServiceClientMock implements WidgetServiceClient {
 		this._onStateChanged(this.state);
 	}
 
-	public constructor(/*timeoutDelay: number = 5000*/) {
+	public constructor(responseDelayMultiplier: number = 1) {
 		this.state = null;
 		this._onStateChanged = null;
-		//this.startTimeout(timeoutDelay);
+		this._responseDelayMultiplier = responseDelayMultiplier;
 	}
 
 	public async invoke(action: WidgetServiceClient.StateAction): Promise<void> {
 		switch (action.step) {
 			case "SELECT_INPUT_CURRENCY":
-				this._currenctCurrency = action.fromCurrency;
-				console.log(`Call invoke SELECT_INPUT_CURRENCY. Set fromCurrency ${this._currenctCurrency}`)
+				this._currencyName = action.fromCurrency;
+				console.log(`Call invoke SELECT_INPUT_CURRENCY. Set fromCurrency ${this._currencyName}`);
+				setTimeout(() => {
+					this.switchState("ASK_FOR_EMAIL");
+				}, 1000 * this._responseDelayMultiplier);;
 				break;
 			case "SET_EMAIL":
-				this._currenctEmail = action.email;
-				console.log(`Call invoke SET_EMAIL. Set fromCurrency ${this._currenctEmail}`)
+				this._email = action.email;
+				console.log(`Call invoke SET_EMAIL. Set email ${this._email}`);
+				setTimeout(() => {
+					this.switchState("PROCESS_PAYMENT");
+				}, 1000 * this._responseDelayMultiplier);
 				break;
 		}
 	}
 
 	public async dispose(): Promise<void> {
-	// 	if (this._timeoutId !== null) {
-	// 		clearTimeout(this._timeoutId);
-	// 	}
 	}
 
-	// private startTimeout(timeoutDelay: number): void {
-	// 	const handler: TimerHandler = async () => {
-	// 		this._mockStateArray[this._currentStateIndex]();
-
-	// 		this._currentStateIndex += 1;
-	// 		if (this._currentStateIndex >= this._mockStateArray.length) {
-	// 			this._currentStateIndex = 0;
-	// 		}
-
-	// 		if (this._onStateChanged === null || this.state === null) {
-	// 			return;
-	// 		}
-
-	// 		try {
-	// 			await this._onStateChanged(this.state);
-	// 		} catch (e) {
-	// 			throw Error("Error in onStageChanged function");
-	// 		} finally {
-	// 			this.startTimeout(timeoutDelay);
-	// 		}
-	// 	};
-	// 	this._timeoutId = setTimeout(handler, timeoutDelay);
-	// }
+	public async start(): Promise<void> {
+		setTimeout(() => {
+			this.switchState("CHOOSE_INPUT_CURRENCY");
+		}, 1000 * this._responseDelayMultiplier);
+	}
 
 	private mockStateAskForEmail(): void {
 		console.log("Run mockStateAskForEmail");
@@ -550,8 +534,8 @@ export class WidgetServiceClientMock implements WidgetServiceClient {
 
 export class WidgetServiceClientImpl implements WidgetServiceClient {
 	public state: WidgetServiceClient.State | null;
-	private _onStateChanged: WidgetServiceClient.StateChangedCallback;
-	private _connection: HubConnection;
+	private readonly _onStateChanged: WidgetServiceClient.StateChangedCallback;
+	private readonly _connection: HubConnection;
 	private readonly _gatewayId: string;
 	private readonly _orderId: string;
 
@@ -576,25 +560,11 @@ export class WidgetServiceClientImpl implements WidgetServiceClient {
 			this.state = state;
 			this._onStateChanged(state);
 		});
-
-		async function start() {
-			try {
-				await connection.start();
-				await connection.invoke("SubscribeToOrderChanges",
-					opts.gatewayId, opts.orderId);
-				console.log("SignalR connected...");
-			} catch (err) {
-				console.log(err);
-				setTimeout(start, 5000);
-			}
-		};
-
-		connection.onclose(async () => {
-			await start();
+		connection.onreconnected(async () => {
+			await this.start();
 		});
 
 		this._connection = connection;
-		start();
 	}
 
 	public async invoke(action: WidgetServiceClient.StateAction): Promise<void> {
@@ -624,7 +594,35 @@ export class WidgetServiceClientImpl implements WidgetServiceClient {
 	}
 
 	public async dispose(): Promise<void> {
-		await this._connection.stop();
-		console.log("SignalR disconnected...");
+		console.log("SignalR disconnecting...");
+		if (this._connection.state === HubConnectionState.Connected
+			|| this._connection.state === HubConnectionState.Connecting
+			|| this._connection.state === HubConnectionState.Reconnecting) {
+			await this._connection.stop();
+		}
+	}
+
+	public async start(): Promise<void> {
+		console.log("SignalR connecting...");
+
+		// Start connection only if we're disconnected now
+		if (this._connection.state === HubConnectionState.Disconnected) {
+			try {
+				await this._connection.start();
+			} catch (err) {
+				console.log(err);
+				setTimeout(this.start, 5000);
+				return;
+			}
+		}
+
+		// Once connected, trying to subscribe to the changes
+		try {
+			await this._connection.invoke("SubscribeToOrderChanges",
+				this._gatewayId, this._orderId);
+		} catch (err) {
+			console.log(err);
+			setTimeout(this.start, 5000);
+		}
 	}
 }

@@ -20,58 +20,115 @@ The application is ready to use. You will see all events in the console. Also yo
 
 ### local
 
-TODO mock implementation
+Для локального тестирования используется mock реализация клиента.
+Подключение библиотеки выполняется с помощью следующей команды:
+```shell
+yarn add @cexiolabs/cexiopay.gate.widget-client-mock
+```
+Использование библиотеки выглядит следующим образом:
+**JavaScript**
+```javascript
+const widgetClient = new WidgetServiceClientMock();
+widgetClient.onStateChanged = async (state) => {
+	this.globalStateVariable = state;
+};
+```
+**TypeScript**
+```typescript
+const widgetClient: WidgetServiceClient = new WidgetServiceClient.WidgetServiceClientMock();
+widgetClient.onStateChanged = async (state: WidgetServiceClient.State) => {
+	this.globalStateVariable = state;
+};
+```
+Конструктор также принимает дополнительный параметр:
+```javascript
+const widgetClient = new WidgetServiceClientMock(responseDelayMultiplier: 1);
+```
+Это число задаёт значение, на которое будет умножаться задержка всех команд,
+которая равна 1 секунде (1000 миллисекунд).
+Например, если передать число 3, то задержка станет 1000ms * 3 = 3000ms - 3 секунды.
+Используйте этот параметр, чтобы сделать эмуляцию слабого интернет-соединения,
+когда сервер отвечает не моментально, а лишь спустя какое-то время. Этот параметр
+повлияет на скорость ответа после вызова `widgetClient.invoke(action)`, а также
+на скорость первого ответа (после вызова `widgetClient.start()`).
+
+Как уже сказано выше, вызов `widgetClient.invoke(action)` запускает триггер
+события `widgetClient.onStateChanged` с задержкой 1 секунду по умолчанию. Флоу
+виджета получается следующий:
+1. Вызываем `widgetClient.start()`
+2. Через секунду приходит обновление `widgetClient.onStateChanged` со страницей
+`state.step === CHOOSE_INPUT_CURRENCY`. Это означает, что рисуем страницу выбора
+валюты.
+3. Как только валюта выбрана, отправляем её:
+```javascript
+const selectedCurrency = "BTC"; // selected value here
+await widgetClient.invoke({
+	step: "SELECT_INPUT_CURRENCY",
+	callbackMethodName: this.globalStateVariable.callbackMethodName,
+	fromCurrency: selectedCurrency
+});
+```
+4. Через секунду приходит обновление `widgetClient.onStateChanged` со страницей
+`state.step === ASK_FOR_EMAIL`. Это означает, что рисуем страницу ввода email.
+5. Как только email введён, отправляем его:
+```javascript
+const inputEmail = "email@example.com"; // input value here
+await widgetClient.invoke({
+	step: "SET_EMAIL",
+	callbackMethodName: this.globalStateVariable.callbackMethodName,
+	email: inputEmail
+});
+```
+6. Через секунду приходит обновление `widgetClient.onStateChanged` со страницей
+`state.step === PROCESS_PAYMENT`. Это означает, что рисуем страницу с QR кодом
+и просьбой оплатить.
+7. Поскольку у mock реализации отсутствует бэкенд, который следит за изменением
+состояния оплаты по QR коду, нам необходимо вручную запросить смену страницы в
+консоли разработчика в браузере.
+Нам нужно найти глобально и вызвать метод `widgetClient.switchState("...")`.
+Например, для Vue.js SPA это будет выглядеть примерно так:
+https://stackoverflow.com/a/51848743
+Поддерживаемые state значения, которые можно передать в этот метод, следующие:
+- CHOOSE_INPUT_CURRENCY - окно выбора валюты
+- ASK_FOR_EMAIL - окно ввода эл.почты
+- PROCESS_PAYMENT - 
+- PAYMENT_RECEIVE
+- PAYMENT_COMPLETED
+Также хочу обратить внимание, что PAYMENT_RECEIVE эмулирует вызов сразу двух-трёх
+событий с задержкой в 10 секунд. Это сделано потому, что между AWAIT_DEPOSIT и COMPLETED
+есть промежуточные события EXCHANGE/EXCHANGED которые не имеют своей собственной
+страницы для отображения, поэтому при их возникновении всё ещё будет отображаться
+страница PAYMENT_RECEIVE, нужно чтобы код был к этому готов.
 
 ### release/snapshot
 
 Для развертывания на сервере используется реализация клиента, которая уже
 непосредственно общается через SignalR с бэкендом.
 Использование библиотеки выглядит следующим образом:
-```typescript
-const gatewayId: string = "...";
-const orderId: string = "...";
-const onStateChanged = async (state: WidgetServiceClient.State, client: WidgetServiceClient): Promise<void> => {
-	switch (state.step) {
-		case "CHOOSE_INPUT_CURRENCY":
-			const rates: ReadonlyArray<WidgetServiceClient.CurrencyRate> = state.rates;
-			const toAmount: WidgetServiceClient.Financial = state.toAmount;
-			const toCurrency: WidgetServiceClient.Currency = state.toCurrency;
-			const progress: WidgetServiceClient.Progress = state.progress;
-			const callbackMethodName: string = state.callbackMethodName;
-			// Render this page
-			// On currency choosed:
-			const action: new WidgetServiceClient.ActionSelectInputCurrency = {
-				callbackMethodName: callbackMethodName,
-				fromCurrency: 'Currency here, g.e. USD/BTC/ETH/etc'
-			};
-			await client.invoke(action);
+**JavaScript**
+```javascript
+const options = {
+	gatewayId: "...",
+	orderId: "order-123456"
+};
 
-		case "ASK_FOR_EMAIL":
-			const email: string | null = state.email;
-			const progress: WidgetServiceClient.Progress = state.progress;
-			const callbackMethodName: string = state.callbackMethodName;
-			// Render this page
-			// On email sent:
-			const action: new WidgetServiceClient.ActionSelectInputCurrency = {
-				callbackMethodName: callbackMethodName,
-				email: 'email@example.com'
-			};
-			await client.invoke(action);
-		
-		case "PROCESS_PAYMENT":
-			const order: WidgetServiceClient.Order = state.order;
-			const progress: WidgetServiceClient.Progress = state.progress;
-			// Render this page
-		
-		case "ERROR_OCCURRED":
-			const errorTitle: string = state.errorTitle;
-			const errorShortDescription: string = state.errorShortDescription;
-			const errorLongDescription: string = state.errorLongDescription;
-			// Show error to user
-	}
-}
-
-const client: WidgetServiceClient = new WidgetServiceClient.WidgetServiceClientImpl(
-	gatewayId, orderId, onStateChanged);
+const widgetClient = new WidgetServiceClientImpl(options);
+await client.start();
 // Client is listening to callbacks at the moment
+// ...
+await client.dispose(); // optional call, this method will disconnect from the server
+```
+**TypeScript**
+```typescript
+const options: WidgetServiceClient.WidgetServiceClientOptions = {
+	gatewayId: "...",
+	orderId: "order-123456"
+};
+
+const widgetClient: WidgetServiceClient = new WidgetServiceClient.WidgetServiceClientImpl(
+	options);
+await client.start();
+// Client is listening to callbacks at the moment
+// ...
+await client.dispose(); // optional call, this method will disconnect from the server
 ```
