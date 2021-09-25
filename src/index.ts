@@ -163,7 +163,7 @@ export namespace WidgetServiceClient {
 	 * where {N} is 3 to 10
 	 */
 	export interface StateProcessPayment {
-		readonly step: "PROCESS_PAYMENT",
+		readonly step: "PROCESS_PAYMENT" | "PAYMENT_RECEIVE" | "PAYMENT_COMPLETED",
 		readonly order: Order,
 		readonly progress: Progress
 	}
@@ -226,14 +226,133 @@ export class WidgetServiceClientMock implements WidgetServiceClient {
 		"USDT",
 		"DASH"
 	];
+	private readonly _processOrder: WidgetServiceClient.Order = {
+		id: "7ae366f4-c193-46cf-a6c3-ba6f4ba0c93e",
+        confirmedAt: new Date("2021-09-15T13:20:36.916927+03:00"),
+        expiredAt: new Date("2021-09-15T13:40:36.916929+03:00"),
+        rate: {
+            symbol: "BTC/USD",
+            rate: "49833.0807"
+        },
+        okRedirect: "https://example.com/order/success",
+        failRedirect: "https://example.com/order/failure",
+        paidStatus: "NONE",
+        rejectionReason: null,
+        state: "AWAIT_DEPOSIT",
+        from: {
+            "currency": "BTC",
+            "amount": "0.00016054"
+        },
+        to: {
+            "currency": "USD",
+            "amount": "8"
+        },
+        deposit: {
+            address: "2MwwYWnpmuiAgysbUBkqM7HLjshSy3X1TTN",
+            uri: "bitcoin:2MwwYWnpmuiAgysbUBkqM7HLjshSy3X1TTN?amount=0.00016054&label=32af53b0-01bb-43b0-a5ef-870847919d56",
+            amount: "0",
+            underpayment: "0.00016054"
+        },
+        depositAcceptConfirmations: 5
+	}
+
+	private readonly _orderReceived1: WidgetServiceClient.Order = {
+		id: "7ae366f4-c193-46cf-a6c3-ba6f4ba0c93e",
+        confirmedAt: new Date("2021-09-15T13:20:36.916927+03:00"),
+        expiredAt: new Date("2021-09-15T13:40:36.916929+03:00"),
+        rate: {
+            symbol: "BTC/USD",
+            rate: "49833.0807"
+        },
+        okRedirect: "https://example.com/order/success",
+        failRedirect: "https://example.com/order/failure",
+        paidStatus: "PAID",
+        rejectionReason: null,
+        state: "AWAIT_DEPOSIT",
+        from: {
+            "currency": "BTC",
+            "amount": "0.00016054"
+        },
+        to: {
+            "currency": "USD",
+            "amount": "8"
+        },
+        deposit: {
+            address: "2MwwYWnpmuiAgysbUBkqM7HLjshSy3X1TTN",
+            uri: "bitcoin:2MwwYWnpmuiAgysbUBkqM7HLjshSy3X1TTN?amount=0&label=32af53b0-01bb-43b0-a5ef-870847919d56",
+            amount: "0.00016054",
+            underpayment: "0.00000000"
+        },
+        depositAcceptConfirmations: 5
+	}
+
+	private readonly _orderReceived2: WidgetServiceClient.Order = {
+		id: "7ae366f4-c193-46cf-a6c3-ba6f4ba0c93e",
+        confirmedAt: new Date("2021-09-15T13:20:36.916927+03:00"),
+        expiredAt: new Date("2021-09-15T13:40:36.916929+03:00"),
+        rate: {
+            symbol: "BTC/USD",
+            rate: "49833.0807"
+        },
+        okRedirect: "https://example.com/order/success",
+        failRedirect: "https://example.com/order/failure",
+        paidStatus: "PAID",
+        rejectionReason: null,
+        state: "EXCHANGE",
+        from: {
+            "currency": "BTC",
+            "amount": "0.00016054"
+        },
+        to: {
+            "currency": "USD",
+            "amount": "8"
+        },
+        deposit: {
+            address: "2MwwYWnpmuiAgysbUBkqM7HLjshSy3X1TTN",
+            uri: "bitcoin:2MwwYWnpmuiAgysbUBkqM7HLjshSy3X1TTN?amount=0&label=32af53b0-01bb-43b0-a5ef-870847919d56",
+            amount: "0.00016054",
+            underpayment: "0.00000000"
+        },
+        depositAcceptConfirmations: 5
+	}
+
+	private readonly _orderCompleted: WidgetServiceClient.Order = {
+		id: "7ae366f4-c193-46cf-a6c3-ba6f4ba0c93e",
+        confirmedAt: new Date("2021-09-15T13:20:36.916927+03:00"),
+        expiredAt: new Date("2021-09-15T13:40:36.916929+03:00"),
+        rate: {
+            symbol: "BTC/USD",
+            rate: "49833.0807"
+        },
+        okRedirect: "https://example.com/order/success",
+        failRedirect: "https://example.com/order/failure",
+        paidStatus: "PAID",
+        rejectionReason: null,
+        state: "COMPLETED",
+        from: {
+            "currency": "BTC",
+            "amount": "0.00016054"
+        },
+        to: {
+            "currency": "USD",
+            "amount": "8"
+        },
+        deposit: {
+            address: "2MwwYWnpmuiAgysbUBkqM7HLjshSy3X1TTN",
+            uri: "bitcoin:2MwwYWnpmuiAgysbUBkqM7HLjshSy3X1TTN?amount=0&label=32af53b0-01bb-43b0-a5ef-870847919d56",
+            amount: "0.00016054",
+            underpayment: "0.00000000"
+        },
+        depositAcceptConfirmations: 5
+	}
 
 	private _currenctCurrency: String | null = null;
 
 	private _currenctEmail: String | null = null;
 
-	private _currentStateIndex: number = 0;
+	//private _currentStateIndex: number = 0;
 
-	private _timeoutId: number | null = null;
+	//private _timeoutId: number | null = null;
 
 	private readonly _mockStateArray: Array<any> = [
 		this.mockStateAskForEmail.bind(this),
@@ -253,10 +372,50 @@ export class WidgetServiceClientMock implements WidgetServiceClient {
 
 	public set onStateChanged(value: WidgetServiceClient.StateChangedCallback) { this._onStateChanged = value; }
 
-	public constructor(timeoutDelay: number = 5000) {
+	public switchState(step: "CHOOSE_INPUT_CURRENCY" | "ASK_FOR_EMAIL"
+		| "PROCESS_PAYMENT" | "PAYMENT_RECEIVE" | "PAYMENT_COMPLETED")
+		: void {
+
+		switch (step) {
+			case "ASK_FOR_EMAIL": {
+				this.mockStateAskForEmail();
+				break;
+			}
+			case "CHOOSE_INPUT_CURRENCY": {
+				this.mockStateChooseInputCurrency();
+				break;
+			}
+			case "PROCESS_PAYMENT": {
+				this.mockStateProcessPayment();
+				break;
+			}
+			case "PAYMENT_RECEIVE": {
+				this.mockStatePaymentReceive1();
+				setTimeout(() => {
+					this.mockStatePaymentReceive2();
+					if (this._onStateChanged === null || this.state === null) {
+						return;
+					}
+					this._onStateChanged(this.state);
+				}, 10000);
+				break;
+			}
+			case "PAYMENT_COMPLETED": {
+				this.mockStatePaymentCompleted();
+				break;
+			}
+		}
+
+		if (this._onStateChanged === null || this.state === null) {
+			return;
+		}
+		this._onStateChanged(this.state);
+	}
+
+	public constructor(/*timeoutDelay: number = 5000*/) {
 		this.state = null;
 		this._onStateChanged = null;
-		this.startTimeout(timeoutDelay);
+		//this.startTimeout(timeoutDelay);
 	}
 
 	public async invoke(action: WidgetServiceClient.StateAction): Promise<void> {
@@ -273,36 +432,36 @@ export class WidgetServiceClientMock implements WidgetServiceClient {
 	}
 
 	public async dispose(): Promise<void> {
-		if (this._timeoutId !== null) {
-			clearTimeout(this._timeoutId);
-		}
+	// 	if (this._timeoutId !== null) {
+	// 		clearTimeout(this._timeoutId);
+	// 	}
 	}
 
-	private startTimeout(timeoutDelay: number): void {
-		const handler: TimerHandler = async () => {
-			this._mockStateArray[this._currentStateIndex]();
+	// private startTimeout(timeoutDelay: number): void {
+	// 	const handler: TimerHandler = async () => {
+	// 		this._mockStateArray[this._currentStateIndex]();
 
-			this._currentStateIndex += 1;
-			if (this._currentStateIndex >= this._mockStateArray.length) {
-				this._currentStateIndex = 0;
-			}
+	// 		this._currentStateIndex += 1;
+	// 		if (this._currentStateIndex >= this._mockStateArray.length) {
+	// 			this._currentStateIndex = 0;
+	// 		}
 
-			if (this._onStateChanged === null || this.state === null) {
-				return;
-			}
+	// 		if (this._onStateChanged === null || this.state === null) {
+	// 			return;
+	// 		}
 
-			try {
-				await this._onStateChanged(this.state);
-			} catch (e) {
-				throw Error("Error in onStageChanged function");
-			} finally {
-				this.startTimeout(timeoutDelay);
-			}
-		};
-		this._timeoutId = setTimeout(handler, timeoutDelay);
-	}
+	// 		try {
+	// 			await this._onStateChanged(this.state);
+	// 		} catch (e) {
+	// 			throw Error("Error in onStageChanged function");
+	// 		} finally {
+	// 			this.startTimeout(timeoutDelay);
+	// 		}
+	// 	};
+	// 	this._timeoutId = setTimeout(handler, timeoutDelay);
+	// }
 
-	private async mockStateAskForEmail(): Promise<void> {
+	private mockStateAskForEmail(): void {
 		console.log("Run mockStateAskForEmail");
 		this.state = {
 			step: "ASK_FOR_EMAIL",
@@ -314,7 +473,7 @@ export class WidgetServiceClientMock implements WidgetServiceClient {
 		}
 	}
 
-	private async mockStateChooseInputCurrency(): Promise<void> {
+	private mockStateChooseInputCurrency(): void {
 		console.log("Run mockStateChooseInputCurrency");
 		this.state = {
 			step: "CHOOSE_INPUT_CURRENCY",
@@ -336,6 +495,50 @@ export class WidgetServiceClientMock implements WidgetServiceClient {
 			callbackMethodName: "SetCurrencyFrom",
 			progress: {
 				currentPageNumber: 1
+			}
+		}
+	}
+
+	private mockStateProcessPayment(): void {
+		console.log("Run mockStateProcessPayment");
+		this.state = {
+			step: "PROCESS_PAYMENT",
+			order: this._processOrder,
+			progress: {
+				currentPageNumber: 3
+			}
+		}
+	}
+
+	private mockStatePaymentReceive1(): void {
+		console.log("Run mockStatePaymentReceive1");
+		this.state = {
+			step: "PAYMENT_RECEIVE",
+			order: this._orderReceived1,
+			progress: {
+				currentPageNumber: 4
+			}
+		}
+	}
+
+	private mockStatePaymentReceive2(): void {
+		console.log("Run mockStatePaymentReceive2");
+		this.state = {
+			step: "PAYMENT_RECEIVE",
+			order: this._orderReceived2,
+			progress: {
+				currentPageNumber: 4
+			}
+		}
+	}
+
+	private mockStatePaymentCompleted(): void {
+		console.log("Run mockStatePaymentCompleted");
+		this.state = {
+			step: "PAYMENT_COMPLETED",
+			order: this._orderCompleted,
+			progress: {
+				currentPageNumber: 5
 			}
 		}
 	}
