@@ -62,10 +62,11 @@ const widgetClient = new WidgetServiceClientMock(responseDelayMultiplier: 1);
 Как уже сказано выше, вызов `widgetClient.invoke(action)` запускает триггер
 события `widgetClient.onStateChanged` с задержкой 1 секунду по умолчанию. Флоу
 виджета получается следующий:
-1. Через секунду приходит обновление `widgetClient.onStateChanged` со страницей
+1. Создаём инстанс класса `WidgetServiceClientMock`
+2. Через секунду приходит обновление `widgetClient.onStateChanged` со страницей
 `state.step === CHOOSE_INPUT_CURRENCY`. Это означает, что рисуем страницу выбора
 валюты.
-1. Как только валюта выбрана, отправляем её:
+3. Как только валюта выбрана, отправляем её:
 ```javascript
 const selectedCurrency = "BTC"; // selected value here
 await widgetClient.invoke({
@@ -74,9 +75,9 @@ await widgetClient.invoke({
 	fromCurrency: selectedCurrency
 });
 ```
-1. Через секунду приходит обновление `widgetClient.onStateChanged` со страницей
+4. Через секунду приходит обновление `widgetClient.onStateChanged` со страницей
 `state.step === ASK_FOR_EMAIL`. Это означает, что рисуем страницу ввода email.
-1. Как только email введён, отправляем его:
+5. Как только email введён, отправляем его:
 ```javascript
 const inputEmail = "email@example.com"; // input value here
 await widgetClient.invoke({
@@ -85,10 +86,10 @@ await widgetClient.invoke({
 	email: inputEmail
 });
 ```
-1. Через секунду приходит обновление `widgetClient.onStateChanged` со страницей
+6. Через секунду приходит обновление `widgetClient.onStateChanged` со страницей
 `state.step === PROCESS_PAYMENT`. Это означает, что рисуем страницу с QR кодом
 и просьбой оплатить.
-1. Поскольку у mock реализации отсутствует бэкенд, который следит за изменением
+7. Поскольку у mock реализации отсутствует бэкенд, который следит за изменением
 состояния оплаты по QR коду, нам необходимо вручную запросить смену страницы в
 консоли разработчика в браузере.
 Нам нужно найти глобально и вызвать метод `widgetClient.switchState("...")`.
