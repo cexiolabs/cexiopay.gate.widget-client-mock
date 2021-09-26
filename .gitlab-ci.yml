@@ -1,11 +1,11 @@
 include:
-  - https://gitlab.wnb:28443/cexiolabs/pipelines/-/raw/master/functions-nodejs.yml
-  - https://gitlab.wnb:28443/cexiolabs/pipelines/-/raw/master/imgaddons-alpine.yml
-  - https://gitlab.wnb:28443/cexiolabs/pipelines/-/raw/master/publish-library-nodejs-vars.yml
-  - https://gitlab.wnb:28443/cexiolabs/pipelines/-/raw/master/build-library-nodejs-14-release.yml
-  - https://gitlab.wnb:28443/cexiolabs/pipelines/-/raw/master/build-library-nodejs-14-snapshot.yml
-  - https://gitlab.wnb:28443/cexiolabs/pipelines/-/raw/master/publish-library-nodejs-14-release.yml
-  - https://gitlab.wnb:28443/cexiolabs/pipelines/-/raw/master/publish-library-nodejs-14-snapshot.yml
+  - https://gitlab.wnb:28443/cexiolabs/pipelines/-/raw/c3e33142265f1f775f170945f898578e307572c1/functions-nodejs.yml
+  - https://gitlab.wnb:28443/cexiolabs/pipelines/-/raw/c3e33142265f1f775f170945f898578e307572c1/imgaddons-alpine.yml
+  - https://gitlab.wnb:28443/cexiolabs/pipelines/-/raw/c3e33142265f1f775f170945f898578e307572c1/publish-library-nodejs-vars.yml
+  - https://gitlab.wnb:28443/cexiolabs/pipelines/-/raw/c3e33142265f1f775f170945f898578e307572c1/build-library-nodejs-14-release.yml
+  - https://gitlab.wnb:28443/cexiolabs/pipelines/-/raw/c3e33142265f1f775f170945f898578e307572c1/build-library-nodejs-14-snapshot.yml
+  - https://gitlab.wnb:28443/cexiolabs/pipelines/-/raw/c3e33142265f1f775f170945f898578e307572c1/publish-library-nodejs-14-release.yml
+  - https://gitlab.wnb:28443/cexiolabs/pipelines/-/raw/c3e33142265f1f775f170945f898578e307572c1/publish-library-nodejs-14-snapshot.yml
 
 stages:
   - build
