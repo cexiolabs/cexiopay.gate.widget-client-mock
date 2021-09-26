@@ -2,6 +2,13 @@
 
 TODO description
 
+
+## Builds
+
+### local
+
+### release/snapshot
+
 ## Usage
 
 ### Test Console
@@ -18,7 +25,7 @@ The application is ready to use. You will see all events in the console. Also yo
 ....
 ```
 
-### local
+### Embed into a web application
 
 Для локального тестирования используется mock реализация клиента.
 Подключение библиотеки выполняется с помощью следующей команды:
@@ -26,18 +33,20 @@ The application is ready to use. You will see all events in the console. Also yo
 yarn add @cexiolabs/cexiopay.gate.widget-client-mock
 ```
 Использование библиотеки выглядит следующим образом:
+
 **JavaScript**
 ```javascript
 const widgetClient = new WidgetServiceClientMock();
 widgetClient.onStateChanged = async (state) => {
-	this.globalStateVariable = state;
+	// do something with new state
 };
 ```
+
 **TypeScript**
 ```typescript
-const widgetClient: WidgetServiceClient = new WidgetServiceClient.WidgetServiceClientMock();
+const widgetClient: WidgetServiceClient = new WidgetServiceClientMock();
 widgetClient.onStateChanged = async (state: WidgetServiceClient.State) => {
-	this.globalStateVariable = state;
+	// do something with new state
 };
 ```
 Конструктор также принимает дополнительный параметр:
@@ -45,21 +54,18 @@ widgetClient.onStateChanged = async (state: WidgetServiceClient.State) => {
 const widgetClient = new WidgetServiceClientMock(responseDelayMultiplier: 1);
 ```
 Это число задаёт значение, на которое будет умножаться задержка всех команд,
-которая равна 1 секунде (1000 миллисекунд).
-Например, если передать число 3, то задержка станет 1000ms * 3 = 3000ms - 3 секунды.
+которая равна 1 секунде.
 Используйте этот параметр, чтобы сделать эмуляцию слабого интернет-соединения,
 когда сервер отвечает не моментально, а лишь спустя какое-то время. Этот параметр
-повлияет на скорость ответа после вызова `widgetClient.invoke(action)`, а также
-на скорость первого ответа (после вызова `widgetClient.start()`).
+повлияет на скорость ответа после вызова `widgetClient.invoke(action)`.
 
 Как уже сказано выше, вызов `widgetClient.invoke(action)` запускает триггер
 события `widgetClient.onStateChanged` с задержкой 1 секунду по умолчанию. Флоу
 виджета получается следующий:
-1. Вызываем `widgetClient.start()`
-2. Через секунду приходит обновление `widgetClient.onStateChanged` со страницей
+1. Через секунду приходит обновление `widgetClient.onStateChanged` со страницей
 `state.step === CHOOSE_INPUT_CURRENCY`. Это означает, что рисуем страницу выбора
 валюты.
-3. Как только валюта выбрана, отправляем её:
+1. Как только валюта выбрана, отправляем её:
 ```javascript
 const selectedCurrency = "BTC"; // selected value here
 await widgetClient.invoke({
@@ -68,9 +74,9 @@ await widgetClient.invoke({
 	fromCurrency: selectedCurrency
 });
 ```
-4. Через секунду приходит обновление `widgetClient.onStateChanged` со страницей
+1. Через секунду приходит обновление `widgetClient.onStateChanged` со страницей
 `state.step === ASK_FOR_EMAIL`. Это означает, что рисуем страницу ввода email.
-5. Как только email введён, отправляем его:
+1. Как только email введён, отправляем его:
 ```javascript
 const inputEmail = "email@example.com"; // input value here
 await widgetClient.invoke({
@@ -79,15 +85,14 @@ await widgetClient.invoke({
 	email: inputEmail
 });
 ```
-6. Через секунду приходит обновление `widgetClient.onStateChanged` со страницей
+1. Через секунду приходит обновление `widgetClient.onStateChanged` со страницей
 `state.step === PROCESS_PAYMENT`. Это означает, что рисуем страницу с QR кодом
 и просьбой оплатить.
-7. Поскольку у mock реализации отсутствует бэкенд, который следит за изменением
+1. Поскольку у mock реализации отсутствует бэкенд, который следит за изменением
 состояния оплаты по QR коду, нам необходимо вручную запросить смену страницы в
 консоли разработчика в браузере.
 Нам нужно найти глобально и вызвать метод `widgetClient.switchState("...")`.
-Например, для Vue.js SPA это будет выглядеть примерно так:
-https://stackoverflow.com/a/51848743
+Например, для Vue.js SPA это будет выглядеть примерно так: https://stackoverflow.com/a/51848743
 Поддерживаемые state значения, которые можно передать в этот метод, следующие:
 - CHOOSE_INPUT_CURRENCY - окно выбора валюты
 - ASK_FOR_EMAIL - окно ввода эл.почты
@@ -100,8 +105,6 @@ https://stackoverflow.com/a/51848743
 страницы для отображения, поэтому при их возникновении всё ещё будет отображаться
 страница PAYMENT_RECEIVE, нужно чтобы код был к этому готов.
 
-### release/snapshot
-
 Для развертывания на сервере используется реализация клиента, которая уже
 непосредственно общается через SignalR с бэкендом.
 Использование библиотеки выглядит следующим образом:
@@ -113,7 +116,6 @@ const options = {
 };
 
 const widgetClient = new WidgetServiceClientImpl(options);
-await client.start();
 // Client is listening to callbacks at the moment
 // ...
 await client.dispose(); // optional call, this method will disconnect from the server
@@ -125,9 +127,7 @@ const options: WidgetServiceClient.WidgetServiceClientOptions = {
 	orderId: "order-123456"
 };
 
-const widgetClient: WidgetServiceClient = new WidgetServiceClient.WidgetServiceClientImpl(
-	options);
-await client.start();
+const widgetClient: WidgetServiceClient = new WidgetServiceClient.WidgetServiceClientImpl(options);
 // Client is listening to callbacks at the moment
 // ...
 await client.dispose(); // optional call, this method will disconnect from the server

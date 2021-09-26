@@ -27,11 +27,6 @@ export interface WidgetServiceClient {
 	//
 
 	/**
-	 * Start connection and listen to changes
-	 */
-	start(): Promise<void>;
-
-	/**
 	 * Dispose all related resources
 	 */
 	dispose(): Promise<void>;
@@ -234,122 +229,122 @@ export class WidgetServiceClientMock implements WidgetServiceClient {
 	];
 	private readonly _processOrder: WidgetServiceClient.Order = {
 		id: "order-123456",
-        confirmedAt: new Date("2021-09-15T13:20:36.916927+03:00"),
-        expiredAt: new Date("2021-09-15T13:40:36.916929+03:00"),
-        rate: {
-            symbol: "BTC/USD",
-            rate: "49833.0807"
-        },
-        okRedirect: "https://example.com/order/success",
-        failRedirect: "https://example.com/order/failure",
-        paidStatus: "NONE",
-        rejectionReason: null,
-        state: "AWAIT_DEPOSIT",
-        from: {
-            "currency": "BTC",
-            "amount": "0.00016054"
-        },
-        to: {
-            "currency": "USD",
-            "amount": "8"
-        },
-        deposit: {
-            address: "2MwwYWnpmuiAgysbUBkqM7HLjshSy3X1TTN",
-            uri: "bitcoin:2MwwYWnpmuiAgysbUBkqM7HLjshSy3X1TTN?amount=0.00016054&label=32af53b0-01bb-43b0-a5ef-870847919d56",
-            amount: "0",
-            underpayment: "0.00016054"
-        },
-        depositAcceptConfirmations: 5
+		confirmedAt: new Date("2021-09-15T13:20:36.916927+03:00"),
+		expiredAt: new Date("2021-09-15T13:40:36.916929+03:00"),
+		rate: {
+			symbol: "BTC/USD",
+			rate: "49833.0807"
+		},
+		okRedirect: "https://example.com/order/success",
+		failRedirect: "https://example.com/order/failure",
+		paidStatus: "NONE",
+		rejectionReason: null,
+		state: "AWAIT_DEPOSIT",
+		from: {
+			"currency": "BTC",
+			"amount": "0.00016054"
+		},
+		to: {
+			"currency": "USD",
+			"amount": "8"
+		},
+		deposit: {
+			address: "2MwwYWnpmuiAgysbUBkqM7HLjshSy3X1TTN",
+			uri: "bitcoin:2MwwYWnpmuiAgysbUBkqM7HLjshSy3X1TTN?amount=0.00016054&label=32af53b0-01bb-43b0-a5ef-870847919d56",
+			amount: "0",
+			underpayment: "0.00016054"
+		},
+		depositAcceptConfirmations: 5
 	}
 
 	private readonly _orderReceived1: WidgetServiceClient.Order = {
 		id: "order-123456",
-        confirmedAt: new Date("2021-09-15T13:20:36.916927+03:00"),
-        expiredAt: new Date("2021-09-15T13:40:36.916929+03:00"),
-        rate: {
-            symbol: "BTC/USD",
-            rate: "49833.0807"
-        },
-        okRedirect: "https://example.com/order/success",
-        failRedirect: "https://example.com/order/failure",
-        paidStatus: "PAID",
-        rejectionReason: null,
-        state: "AWAIT_DEPOSIT",
-        from: {
-            "currency": "BTC",
-            "amount": "0.00016054"
-        },
-        to: {
-            "currency": "USD",
-            "amount": "8"
-        },
-        deposit: {
-            address: "2MwwYWnpmuiAgysbUBkqM7HLjshSy3X1TTN",
-            uri: "bitcoin:2MwwYWnpmuiAgysbUBkqM7HLjshSy3X1TTN?amount=0&label=32af53b0-01bb-43b0-a5ef-870847919d56",
-            amount: "0.00016054",
-            underpayment: "0.00000000"
-        },
-        depositAcceptConfirmations: 5
+		confirmedAt: new Date("2021-09-15T13:20:36.916927+03:00"),
+		expiredAt: new Date("2021-09-15T13:40:36.916929+03:00"),
+		rate: {
+			symbol: "BTC/USD",
+			rate: "49833.0807"
+		},
+		okRedirect: "https://example.com/order/success",
+		failRedirect: "https://example.com/order/failure",
+		paidStatus: "PAID",
+		rejectionReason: null,
+		state: "AWAIT_DEPOSIT",
+		from: {
+			"currency": "BTC",
+			"amount": "0.00016054"
+		},
+		to: {
+			"currency": "USD",
+			"amount": "8"
+		},
+		deposit: {
+			address: "2MwwYWnpmuiAgysbUBkqM7HLjshSy3X1TTN",
+			uri: "bitcoin:2MwwYWnpmuiAgysbUBkqM7HLjshSy3X1TTN?amount=0&label=32af53b0-01bb-43b0-a5ef-870847919d56",
+			amount: "0.00016054",
+			underpayment: "0.00000000"
+		},
+		depositAcceptConfirmations: 5
 	}
 
 	private readonly _orderReceived2: WidgetServiceClient.Order = {
 		id: "order-123456",
-        confirmedAt: new Date("2021-09-15T13:20:36.916927+03:00"),
-        expiredAt: new Date("2021-09-15T13:40:36.916929+03:00"),
-        rate: {
-            symbol: "BTC/USD",
-            rate: "49833.0807"
-        },
-        okRedirect: "https://example.com/order/success",
-        failRedirect: "https://example.com/order/failure",
-        paidStatus: "PAID",
-        rejectionReason: null,
-        state: "EXCHANGE",
-        from: {
-            "currency": "BTC",
-            "amount": "0.00016054"
-        },
-        to: {
-            "currency": "USD",
-            "amount": "8"
-        },
-        deposit: {
-            address: "2MwwYWnpmuiAgysbUBkqM7HLjshSy3X1TTN",
-            uri: "bitcoin:2MwwYWnpmuiAgysbUBkqM7HLjshSy3X1TTN?amount=0&label=32af53b0-01bb-43b0-a5ef-870847919d56",
-            amount: "0.00016054",
-            underpayment: "0.00000000"
-        },
-        depositAcceptConfirmations: 5
+		confirmedAt: new Date("2021-09-15T13:20:36.916927+03:00"),
+		expiredAt: new Date("2021-09-15T13:40:36.916929+03:00"),
+		rate: {
+			symbol: "BTC/USD",
+			rate: "49833.0807"
+		},
+		okRedirect: "https://example.com/order/success",
+		failRedirect: "https://example.com/order/failure",
+		paidStatus: "PAID",
+		rejectionReason: null,
+		state: "EXCHANGE",
+		from: {
+			"currency": "BTC",
+			"amount": "0.00016054"
+		},
+		to: {
+			"currency": "USD",
+			"amount": "8"
+		},
+		deposit: {
+			address: "2MwwYWnpmuiAgysbUBkqM7HLjshSy3X1TTN",
+			uri: "bitcoin:2MwwYWnpmuiAgysbUBkqM7HLjshSy3X1TTN?amount=0&label=32af53b0-01bb-43b0-a5ef-870847919d56",
+			amount: "0.00016054",
+			underpayment: "0.00000000"
+		},
+		depositAcceptConfirmations: 5
 	}
 
 	private readonly _orderCompleted: WidgetServiceClient.Order = {
 		id: "7ae366f4-c193-46cf-a6c3-ba6f4ba0c93e",
-        confirmedAt: new Date("2021-09-15T13:20:36.916927+03:00"),
-        expiredAt: new Date("2021-09-15T13:40:36.916929+03:00"),
-        rate: {
-            symbol: "BTC/USD",
-            rate: "49833.0807"
-        },
-        okRedirect: "https://example.com/order/success",
-        failRedirect: "https://example.com/order/failure",
-        paidStatus: "PAID",
-        rejectionReason: null,
-        state: "COMPLETED",
-        from: {
-            "currency": "BTC",
-            "amount": "0.00016054"
-        },
-        to: {
-            "currency": "USD",
-            "amount": "8"
-        },
-        deposit: {
-            address: "2MwwYWnpmuiAgysbUBkqM7HLjshSy3X1TTN",
-            uri: "bitcoin:2MwwYWnpmuiAgysbUBkqM7HLjshSy3X1TTN?amount=0&label=32af53b0-01bb-43b0-a5ef-870847919d56",
-            amount: "0.00016054",
-            underpayment: "0.00000000"
-        },
-        depositAcceptConfirmations: 5
+		confirmedAt: new Date("2021-09-15T13:20:36.916927+03:00"),
+		expiredAt: new Date("2021-09-15T13:40:36.916929+03:00"),
+		rate: {
+			symbol: "BTC/USD",
+			rate: "49833.0807"
+		},
+		okRedirect: "https://example.com/order/success",
+		failRedirect: "https://example.com/order/failure",
+		paidStatus: "PAID",
+		rejectionReason: null,
+		state: "COMPLETED",
+		from: {
+			"currency": "BTC",
+			"amount": "0.00016054"
+		},
+		to: {
+			"currency": "USD",
+			"amount": "8"
+		},
+		deposit: {
+			address: "2MwwYWnpmuiAgysbUBkqM7HLjshSy3X1TTN",
+			uri: "bitcoin:2MwwYWnpmuiAgysbUBkqM7HLjshSy3X1TTN?amount=0&label=32af53b0-01bb-43b0-a5ef-870847919d56",
+			amount: "0.00016054",
+			underpayment: "0.00000000"
+		},
+		depositAcceptConfirmations: 5
 	}
 
 	private _currencyName: String | null = null;
@@ -371,9 +366,7 @@ export class WidgetServiceClientMock implements WidgetServiceClient {
 		this._onStateChanged = value;
 	}
 
-	public switchState(step: "CHOOSE_INPUT_CURRENCY" | "ASK_FOR_EMAIL"
-		| "PROCESS_PAYMENT" | "PAYMENT_RECEIVE" | "PAYMENT_COMPLETED")
-		: void {
+	public switchState(step: WidgetServiceClient.State["step"]): void {
 
 		switch (step) {
 			case "ASK_FOR_EMAIL": {
@@ -415,6 +408,10 @@ export class WidgetServiceClientMock implements WidgetServiceClient {
 		this.state = null;
 		this._onStateChanged = null;
 		this._responseDelayMultiplier = responseDelayMultiplier;
+
+		setTimeout(() => {
+			this.switchState("CHOOSE_INPUT_CURRENCY");
+		}, 1000 * this._responseDelayMultiplier);
 	}
 
 	public async invoke(action: WidgetServiceClient.StateAction): Promise<void> {
@@ -437,12 +434,6 @@ export class WidgetServiceClientMock implements WidgetServiceClient {
 	}
 
 	public async dispose(): Promise<void> {
-	}
-
-	public async start(): Promise<void> {
-		setTimeout(() => {
-			this.switchState("CHOOSE_INPUT_CURRENCY");
-		}, 1000 * this._responseDelayMultiplier);
 	}
 
 	private mockStateAskForEmail(): void {
@@ -561,7 +552,7 @@ export class WidgetServiceClientImpl implements WidgetServiceClient {
 			this._onStateChanged(state);
 		});
 		connection.onreconnected(async () => {
-			await this.start();
+			//await this.start();
 		});
 
 		this._connection = connection;
@@ -602,27 +593,27 @@ export class WidgetServiceClientImpl implements WidgetServiceClient {
 		}
 	}
 
-	public async start(): Promise<void> {
-		console.log("SignalR connecting...");
+	// public async start(): Promise<void> {
+	// 	console.log("SignalR connecting...");
 
-		// Start connection only if we're disconnected now
-		if (this._connection.state === HubConnectionState.Disconnected) {
-			try {
-				await this._connection.start();
-			} catch (err) {
-				console.log(err);
-				setTimeout(this.start, 5000);
-				return;
-			}
-		}
+	// 	// Start connection only if we're disconnected now
+	// 	if (this._connection.state === HubConnectionState.Disconnected) {
+	// 		try {
+	// 			await this._connection.start();
+	// 		} catch (err) {
+	// 			console.log(err);
+	// 			setTimeout(this.start, 5000);
+	// 			return;
+	// 		}
+	// 	}
 
-		// Once connected, trying to subscribe to the changes
-		try {
-			await this._connection.invoke("SubscribeToOrderChanges",
-				this._gatewayId, this._orderId);
-		} catch (err) {
-			console.log(err);
-			setTimeout(this.start, 5000);
-		}
-	}
+	// 	// Once connected, trying to subscribe to the changes
+	// 	try {
+	// 		await this._connection.invoke("SubscribeToOrderChanges",
+	// 			this._gatewayId, this._orderId);
+	// 	} catch (err) {
+	// 		console.log(err);
+	// 		setTimeout(this.start, 5000);
+	// 	}
+	// }
 }
