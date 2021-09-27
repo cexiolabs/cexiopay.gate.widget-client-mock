@@ -552,10 +552,11 @@ export class WidgetServiceClientImpl implements WidgetServiceClient {
 			this._onStateChanged(state);
 		});
 		connection.onreconnected(async () => {
-			//await this.start();
+			await this.start();
 		});
 
 		this._connection = connection;
+		this.start();
 	}
 
 	public async invoke(action: WidgetServiceClient.StateAction): Promise<void> {
@@ -593,27 +594,27 @@ export class WidgetServiceClientImpl implements WidgetServiceClient {
 		}
 	}
 
-	// public async start(): Promise<void> {
-	// 	console.log("SignalR connecting...");
+	private async start(): Promise<void> {
+		console.log("SignalR connecting...");
 
-	// 	// Start connection only if we're disconnected now
-	// 	if (this._connection.state === HubConnectionState.Disconnected) {
-	// 		try {
-	// 			await this._connection.start();
-	// 		} catch (err) {
-	// 			console.log(err);
-	// 			setTimeout(this.start, 5000);
-	// 			return;
-	// 		}
-	// 	}
+		// Start connection only if we're disconnected now
+		if (this._connection.state === HubConnectionState.Disconnected) {
+			try {
+				await this._connection.start();
+			} catch (err) {
+				console.log(err);
+				setTimeout(this.start, 5000);
+				return;
+			}
+		}
 
-	// 	// Once connected, trying to subscribe to the changes
-	// 	try {
-	// 		await this._connection.invoke("SubscribeToOrderChanges",
-	// 			this._gatewayId, this._orderId);
-	// 	} catch (err) {
-	// 		console.log(err);
-	// 		setTimeout(this.start, 5000);
-	// 	}
-	// }
+		// Once connected, trying to subscribe to the changes
+		try {
+			await this._connection.invoke("SubscribeToOrderChanges",
+				this._gatewayId, this._orderId);
+		} catch (err) {
+			console.log(err);
+			setTimeout(this.start, 5000);
+		}
+	}
 }

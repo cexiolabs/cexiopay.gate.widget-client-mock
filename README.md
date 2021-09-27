@@ -108,12 +108,15 @@ await widgetClient.invoke({
 
 Для развертывания на сервере используется реализация клиента, которая уже
 непосредственно общается через SignalR с бэкендом.
-Использование библиотеки выглядит следующим образом:
+Использование библиотеки выглядит следующим образом:  
 **JavaScript**
 ```javascript
 const options = {
 	gatewayId: "...",
-	orderId: "order-123456"
+	orderId: "order-123456",
+	onStateChanged: async (state) => {
+		// do something with new state
+	}
 };
 
 const widgetClient = new WidgetServiceClientImpl(options);
@@ -125,7 +128,10 @@ await client.dispose(); // optional call, this method will disconnect from the s
 ```typescript
 const options: WidgetServiceClient.WidgetServiceClientOptions = {
 	gatewayId: "...",
-	orderId: "order-123456"
+	orderId: "order-123456",
+	onStateChanged: async (state: WidgetServiceClient.State) => {
+		// do something with new state
+	}
 };
 
 const widgetClient: WidgetServiceClient = new WidgetServiceClient.WidgetServiceClientImpl(options);
