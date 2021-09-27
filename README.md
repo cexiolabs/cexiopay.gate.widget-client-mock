@@ -1,7 +1,6 @@
-# Payment Widget Client
+# CEX Pay's Payment Widget Client
 
-TODO description
-
+CEX Pay's Payment Widget client library.
 
 ## Builds
 
